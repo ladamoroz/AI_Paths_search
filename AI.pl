@@ -11,8 +11,8 @@
    Generating the map
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-start(0,0).             %started cell of actor 
-xmax(9).                %maximum number of cells horizontally 
+start(0,0).             %started cell of actor
+xmax(9).                %maximum number of cells horizontally
 ymax(9).                %maximum number of cells vertically
 
 
@@ -44,7 +44,7 @@ covid_zone(X,Y):-
         ).
 
 
-%predicate to randomly choose covid cell 
+%predicate to randomly choose covid cell
 generate_covid():-
         xmax(Xmax),
         ymax(Ymax),
@@ -121,7 +121,7 @@ equals(X,Y,X0,Y0) :-
     Y is Y0.
     
 
-%predicate to check whether actor have immunity 
+%predicate to check whether actor have immunity
 check_immunity(X0, Y0) :-
         ((doctor(X0,Y0);
         mask(X0, Y0);
@@ -131,15 +131,20 @@ check_immunity(X0, Y0) :-
         retractall(immunity(_)),
         assert(immunity(0)).
 
+covid_is_near(X,Y):-
+    covid(Xc,Yc),
+    Dx is (abs(X - Xc)),
+    Dy is (abs(Y - Yc)),
+    Dx<3,
+    Dy<3.
 
 %predicate to generate possible move of actor
 move(X0,Y0,X,Y):-
     neighbours(X0,Y0,X,Y),
     (
+        (\+(covid_zone(X,Y)), \+covid_is_near(X,Y));
         \+(covid_zone(X,Y));
-        (
-        covid_zone(X,Y),
-        immunity(1))
+        (covid_zone(X,Y), immunity(1))
      ).
 
 
@@ -296,7 +301,7 @@ available(X,Y) :-
     \+(covid_zone(X, Y)),
     \+(closed(X,Y,_,_,_)).
 
-%predicate to choose cell with minimum F among children 
+%predicate to choose cell with minimum F among children
 child([X,Y]) :-
     findall(opened(X0,Y0,_,_,F0), opened(X0,Y0,_,_,F0), [A|Tail]),
     child(A, Tail, [X,Y]).

@@ -1,15 +1,23 @@
+%module for list manipulations
 :- use_module(library(lists)).
-:- dynamic parent/2.
-:- dynamic opened/5.
-:- dynamic closed/5.
-:- dynamic at_home/1.
 
-start(0,0).
-xmax(9).
-ymax(9).
 
+:- dynamic parent/2.            %dynamic predicate parent with 2 parameters to find parent of cell in A* algorithm
+:- dynamic opened/5.            %dynamic predicate opened with 5 parameters to manipulate cells which need to visit in A* algorithm
+:- dynamic closed/5.            %dynamic predicate closed with 5 parametes to manipulate with visited cells in A* algorithm
+:- dynamic at_home/1.           %dynamic predicate at_home with 1 parameter to determine whether actor at home in A* algorithm
+
+
+start(0,0).             %started cell of actor 
+xmax(9).                %maximum number of cells horizontally 
+ymax(9).                %maximum number of cells vertically
+
+
+%predicate to check whether cell in the borders of the map
 in_field(X,Y):- xmax(Xmax), ymax(Ymax), Xbound is Xmax-1, Ybound is Ymax-1, between(0, Xbound, X), between(0,Ybound,Y).
 
+
+%predicate to determine neighbours of the cell
 neighbours(X0,Y0, X1,Y1):-
         (
          X1 is X0+1, Y1 is Y0;
@@ -23,6 +31,8 @@ neighbours(X0,Y0, X1,Y1):-
         ),
         in_field(X1,Y1).
 
+
+%predicate to determine cells infected by covid
 covid_zone(X,Y):-
         covid(Xc,Yc),
         (
@@ -30,6 +40,8 @@ covid_zone(X,Y):-
          covid(X,Y)
         ).
 
+
+%predicate to randomly choose covid cell 
 generate_covid():-
         xmax(Xmax),
         ymax(Ymax),
@@ -41,12 +53,15 @@ generate_covid():-
         \+(covid(X,Y)),
         assert(covid(X,Y)).
 
+
+%predicate to place 2 covids on the map
 generate_covids():-
         retractall(covid(_,_)),
         repeat, generate_covid() ->!,
         repeat, generate_covid() ->!.
 
 
+%predicate to randomly choose doctor cell
 generate_doctor() :-
         retractall(doctor(_,_)),
         xmax(Xmax),
@@ -56,7 +71,7 @@ generate_doctor() :-
         \+(covid_zone(X,Y)),
         assert(doctor(X,Y)).
 
-
+%predicate to randomly choose mask cell
 generate_mask() :-
         retractall(mask(_,_)),
         xmax(Xmax),
@@ -67,6 +82,8 @@ generate_mask() :-
         \+(covid_zone(X,Y)),
         assert(mask(X,Y)).
 
+
+%predicate to randomly choose home cell
 generate_home():-
         retractall(home(_,_)),
         xmax(Xmax),
@@ -76,6 +93,8 @@ generate_home():-
         \+(covid_zone(X,Y)),
         assert(home(X,Y)).
 
+
+%predicate to generate places of covids, doctor, mask, home and print it
 generate_map():-
     generate_covids(),
     repeat, generate_doctor()->!,
@@ -83,10 +102,14 @@ generate_map():-
     repeat, generate_home()->!,
     print_map().
 
+
+%predicate to determine whether coordinates of 2 cells are equal
 equals(X,Y,X0,Y0) :-
     X is X0,
     Y is Y0.
 
+
+%predicate to print places of covids, doctor, mask and home
 print_map():-
         covid(X,Y) -> write('Covid: '),print([X, Y]), write('\n'),
         covid(X0,Y0),\+equals(X,Y,X0,Y0) -> write('Covid: '),print([X0, Y0]), write('\n'),
@@ -94,6 +117,8 @@ print_map():-
         mask(X2,Y2) -> write('Mask: '),print([X2,Y2]), write('\n'),
         home(X3,Y3) -> write('Home: '),print([X3,Y3]), write('\n').
 
+
+%predicate to check whether actor have immunity 
 check_immunity(X0, Y0) :-
         ((doctor(X0,Y0);
         mask(X0, Y0);
@@ -102,7 +127,9 @@ check_immunity(X0, Y0) :-
         assert(immunity(1)));
         retractall(immunity(_)),
         assert(immunity(0)).
-        
+
+
+%predicate to generate possible move of actor
 move(X0,Y0,X,Y):-
     neighbours(X0,Y0,X,Y),
     (
@@ -112,6 +139,7 @@ move(X0,Y0,X,Y):-
         immunity(1))
      ).
 
+%base case of backtracking when actor reach home
 backtracking_search([X0, Y0], [X0, Y0], _,[[X0,Y0]], Distance):-
         home(X0,Y0),
         min_distance(Mindist),
@@ -121,6 +149,7 @@ backtracking_search([X0, Y0], [X0, Y0], _,[[X0,Y0]], Distance):-
         retractall(immunity(_)),
         assert(immunity(0)).
 
+%backtracking predicate to find possible paths to home cell
 backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance) :-
         move(X0,Y0,X,Y),
         check_immunity(X0,Y0),
@@ -130,6 +159,7 @@ backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance) :-
         Dist < Mindist,
         backtracking_search([X, Y], [Xh,Yh], [[X, Y]|Visited], Path, Dist).
 
+%predicate for backtracking search of shortest path to home on generated map
 backtracking() :-
         generate_map(),
         home(Xh,Yh),
@@ -143,6 +173,7 @@ backtracking() :-
         min_distance(D),
         write('Road: '), print(Road), write('\nDistance: '), print(D).
 
+%predicate to choose shortest path among all paths to home
 backtracking_path(Sorted,Xh,Yh) :-
         start(X0,Y0),
         setof(Len-Path, (backtracking_search([X0,Y0],[Xh,Yh], [], Path, 0), length(Path, Len)), All),

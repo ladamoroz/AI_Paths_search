@@ -209,6 +209,7 @@ h(X,Y,H) :-
     home(Xh, Yh),
     H is max(abs(X - Xh), abs(Y-Yh)).
 
+%predicate to find shortest path with use of A* algorithm on the generated map
 a_star() :-
     generate_map(),
     start(Xs,Ys),
@@ -230,21 +231,27 @@ a_star() :-
     D is Len-1,
     write('Road: '), write(Road), write('\nDistance: '), write(D).
 
+
+%predicate to find shortest path among all paths to home
 a_star_shorted(Sorted, Xh,Yh):-
     start(Xs,Ys),
     setof(Len-Path, (path([Xs,Ys],[Xh,Yh],Path), length(Path, Len)), All),
     member(_-Sorted, All),!.
 
 
+%predicate to reconstruct path from start cell to home cell
 path([Xs, Ys], [Xs, Ys], [[Xs, Ys]]):-!.
 path([Xs, Ys], [Xh, Yh], [[Xs,Ys]|Path]):-
     parent([Xs, Ys], [X1, Y1]),
     path([X1, Y1], [Xh, Yh], Path).
 
+
+%terminating condition for A* algorithm when no path found
 a_search() :-
     \+(opened(_,_,_,_,_)),
     write('No path').
 
+%terminating condition for A* algorithm when path found
 a_search() :-
     home(Xh, Yh),
     (clause(closed(Xh,Yh,_,_,_),true) ->
@@ -252,15 +259,17 @@ a_search() :-
         retractall(immunity(_)),
         assert(immunity(0))).
 
+%predicate to find path in from start to home with use of A* algorithm
 a_search() :-
     (home(Xh,Yh), \+(closed(Xh,Yh,_,_,_)), opened(_,_,_,_,_) )->
-    current([Xc,Yc]),
+    child([Xc,Yc]),
     opened(Xc,Yc,Gc,Hc,Fc),
     assert(closed(Xc,Yc,Gc,Hc,Fc)),
     retractall(opened(Xc,Yc,_,_,_)),
     a_neighbours(Xc,Yc,Gc,Hc,Fc),
     a_search().
 
+%predicate to calculate cost of movement from cell to its neighbour cell
 a_neighbours(X,Y,G,H,F) :-
     ((check_immunity(X,Y), move(X,Y,Xn,Yn), available(Xn,Yn), \+(opened(Xn,Yn,_,_,_)))->
      assert(parent([X, Y], [Xn, Yn])),
@@ -282,24 +291,30 @@ a_neighbours(X,Y,G,H,F) :-
     
     true.
 
+%predicate to check whether we can move to given point
 available(X,Y) :-
     \+(covid_zone(X, Y)),
     \+(closed(X,Y,_,_,_)).
 
-current([X,Y]) :-
+%predicate to choose cell with minimum F among children 
+child([X,Y]) :-
     findall(opened(X0,Y0,_,_,F0), opened(X0,Y0,_,_,F0), [A|Tail]),
-    current(A, Tail, [X,Y]).
+    child(A, Tail, [X,Y]).
 
-current(opened(X0,Y0,_,_,_),[],[X,Y]) :-
+%terminating condition for finding child with min F
+child(opened(X0,Y0,_,_,_),[],[X,Y]) :-
     X is X0,
     Y is Y0.
 
-current(opened(X0,Y0,_,_,F0), [opened(X1,Y1,_,_,F1)|Tail], [X,Y]) :-
+%comparing F among children
+child(opened(X0,Y0,_,_,F0), [opened(X1,Y1,_,_,F1)|Tail], [X,Y]) :-
     (F0 < F1) -> (current(opened(X0,Y0,_,_,F0),Tail, [X,Y]));
-    current(opened(X1,Y1,_,_,F1),Tail, [X,Y]).
+    child(opened(X1,Y1,_,_,F1),Tail, [X,Y]).
 
+%predicate to run algorithms and determine the execution time of each
 main() :-
     statistics(runtime, [Start|_]),
+    %Uncomment necessary algorithm
     backtracking(),
     %a_star(),
     statistics(runtime,[Stop|_]),

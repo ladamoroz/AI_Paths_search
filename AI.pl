@@ -7,6 +7,9 @@
 :- dynamic closed/5.            %dynamic predicate closed with 5 parametes to manipulate with visited cells in A* algorithm
 :- dynamic at_home/1.           %dynamic predicate at_home with 1 parameter to determine whether actor at home in A* algorithm
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Generating the map
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 start(0,0).             %started cell of actor 
 xmax(9).                %maximum number of cells horizontally 
@@ -103,12 +106,6 @@ generate_map():-
     print_map().
 
 
-%predicate to determine whether coordinates of 2 cells are equal
-equals(X,Y,X0,Y0) :-
-    X is X0,
-    Y is Y0.
-
-
 %predicate to print places of covids, doctor, mask and home
 print_map():-
         covid(X,Y) -> write('Covid: '),print([X, Y]), write('\n'),
@@ -117,6 +114,12 @@ print_map():-
         mask(X2,Y2) -> write('Mask: '),print([X2,Y2]), write('\n'),
         home(X3,Y3) -> write('Home: '),print([X3,Y3]), write('\n').
 
+
+%predicate to determine whether coordinates of 2 cells are equal
+equals(X,Y,X0,Y0) :-
+    X is X0,
+    Y is Y0.
+    
 
 %predicate to check whether actor have immunity 
 check_immunity(X0, Y0) :-
@@ -139,6 +142,11 @@ move(X0,Y0,X,Y):-
         immunity(1))
      ).
 
+
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Backtracking search
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
 %base case of backtracking when actor reach home
 backtracking_search([X0, Y0], [X0, Y0], _,[[X0,Y0]], Distance):-
         home(X0,Y0),
@@ -158,6 +166,7 @@ backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance) :-
         Dist is Distance +1,
         Dist < Mindist,
         backtracking_search([X, Y], [Xh,Yh], [[X, Y]|Visited], Path, Dist).
+
 
 %predicate for backtracking search of shortest path to home on generated map
 backtracking() :-
@@ -180,9 +189,12 @@ backtracking_path(Sorted,Xh,Yh) :-
         member(_-Sorted, All),!.
 
 
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   A* search
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 
-
+%predicate to find cost of movement to (X,Y) cell
 g(X,Y,G) :-
     ((clause(parent([Xp,Yp],[X,Y]), true)), clause(opened(Xp, Yp, _, _, _), true)) ->
         opened(Xp, Yp, Gp, _, _), G is Gp+1;
@@ -190,7 +202,9 @@ g(X,Y,G) :-
         closed(Xp,Yp,Gp,_,_), G is Gp+1;
     (start(Xs,Ys),
     G is max(abs(X -Xs),abs(Y-Ys))).
-    
+
+
+%heuristics for cost to move from (X,Y) cell to home cell
 h(X,Y,H) :-
     home(Xh, Yh),
     H is max(abs(X - Xh), abs(Y-Yh)).
@@ -213,7 +227,8 @@ a_star() :-
     at_home(Home),
     Home == 1 -> a_star_shorted(Road,Xh,Yh),
     length(Road,Len),
-    write('Road: '), write(Road), write('\nDistance: '), write(Len).
+    D is Len-1,
+    write('Road: '), write(Road), write('\nDistance: '), write(D).
 
 a_star_shorted(Sorted, Xh,Yh):-
     start(Xs,Ys),

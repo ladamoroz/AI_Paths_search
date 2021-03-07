@@ -310,8 +310,13 @@ child(opened(X0,Y0,_,_,_),[],[X,Y]) :-
 child(opened(X0,Y0,_,_,F0), [opened(X1,Y1,_,_,F1)|Tail], [X,Y]) :-
     (F0 < F1) -> (current(opened(X0,Y0,_,_,F0),Tail, [X,Y]));
     child(opened(X1,Y1,_,_,F1),Tail, [X,Y]).
+    
+    
+    
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+   Run algorithms and determine the execution time of each
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-%predicate to run algorithms and determine the execution time of each
 main() :-
     statistics(runtime, [Start|_]),
     %Uncomment necessary algorithm

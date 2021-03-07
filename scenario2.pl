@@ -130,7 +130,7 @@ check_immunity(X0, Y0) :-
         assert(immunity(1)));
         retractall(immunity(_)),
         assert(immunity(0)).
-
+%predicate determine whether covid is near
 covid_is_near(X,Y):-
     covid(Xc,Yc),
     Dx is (abs(X - Xc)),

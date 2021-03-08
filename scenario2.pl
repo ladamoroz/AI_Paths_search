@@ -6,7 +6,7 @@
 :- dynamic opened/5.            %dynamic predicate opened with 5 parameters to manipulate cells which need to visit in A* algorithm
 :- dynamic closed/5.            %dynamic predicate closed with 5 parametes to manipulate with visited cells in A* algorithm
 :- dynamic at_home/1.           %dynamic predicate at_home with 1 parameter to determine whether actor at home in A* algorithm
-:-table covid_is_near/2.        %caching of whether covid is near
+:- table covid_is_near/2.        %caching of whether covid is near
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Generating the map
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */

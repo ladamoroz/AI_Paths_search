@@ -6,7 +6,8 @@
 :- dynamic opened/5.            %dynamic predicate opened with 5 parameters to manipulate cells which need to visit in A* algorithm
 :- dynamic closed/5.            %dynamic predicate closed with 5 parametes to manipulate with visited cells in A* algorithm
 :- dynamic at_home/1.           %dynamic predicate at_home with 1 parameter to determine whether actor at home in A* algorithm
-:- table covid_is_near/2.        %caching of whether covid is near
+
+:-dynamic covid_near/2.         %dynamic predicate with 2 parameters to determine whether covid is near or not
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Generating the map
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -130,19 +131,19 @@ check_immunity(X0, Y0) :-
         assert(immunity(1)));
         retractall(immunity(_)),
         assert(immunity(0)).
+
 %predicate determine whether covid is near
-covid_is_near(X,Y):-
+covid_is_near():-
     covid(Xc,Yc),
-    Dx is (abs(X - Xc)),
-    Dy is (abs(Y - Yc)),
-    Dx<3,
-    Dy<3.
+    neighbours(Xc,Yc,X,Y),
+    neighbours(X,Y,Xcn,Ycn),
+    assert(covid_near(Xcn,Ycn)).
 
 %predicate to generate possible move of actor
 move(X0,Y0,X,Y):-
     neighbours(X0,Y0,X,Y),
     (
-        (\+(covid_zone(X,Y)), \+covid_is_near(X,Y));
+        (\+(covid_zone(X,Y)), covid_near(X,Y));
         \+(covid_zone(X,Y));
         (covid_zone(X,Y), immunity(1))
      ).
@@ -183,6 +184,8 @@ backtracking() :-
         assert(min_distance(Xmax*Ymax)),
         retractall(immunity(_)),
         assert(immunity(0)),
+        retractall(covid_near(_,_)),
+        covid_is_near(),
         backtracking_path(Road,Xh,Yh),
         min_distance(D),
         write('Road: '), print(Road), write('\nDistance: '), print(D).
@@ -229,6 +232,8 @@ a_star() :-
     assert(opened(Xs, Ys, Gs, Hs, Fs)),
     retractall(immunity(_)),
     assert(immunity(0)),
+    retractall(covid_near(_,_)),
+    covid_is_near(),
     a_search(),
     at_home(Home),
     Home == 1 -> a_star_shorted(Road,Xh,Yh),
@@ -325,8 +330,8 @@ child(opened(X0,Y0,_,_,F0), [opened(X1,Y1,_,_,F1)|Tail], [X,Y]) :-
 main() :-
     statistics(runtime, [Start|_]),
     %Uncomment necessary algorithm
-    %backtracking(),
-    a_star(),
+    backtracking(),
+    %a_star(),
     statistics(runtime,[Stop|_]),
     ExecTime is Stop-Start,
     write('\nExecution time: '),write(ExecTime),write('ms').

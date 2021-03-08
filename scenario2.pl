@@ -201,9 +201,9 @@ backtracking_path(Sorted,Xh,Yh) :-
 
 %predicate to find cost of movement to (X,Y) cell
 g(X,Y,G) :-
-    ((clause(parent([Xp,Yp],[X,Y]), true)), clause(opened(Xp, Yp, _, _, _), true)) ->
+    (parent([Xp,Yp],[X,Y]), opened(Xp, Yp, _, _, _)) ->
         opened(Xp, Yp, Gp, _, _), G is Gp+1;
-    ((clause(parent([Xp,Yp],[X,Y]), true)), clause(closed(Xp, Yp, _, _, _), true)) ->
+    (parent([Xp,Yp],[X,Y]), closed(Xp, Yp, _, _, _)) ->
         closed(Xp,Yp,Gp,_,_), G is Gp+1;
     (start(Xs,Ys),
     G is max(abs(X -Xs),abs(Y-Ys))).
@@ -259,10 +259,10 @@ a_search() :-
 %terminating condition for A* algorithm when path found
 a_search() :-
     home(Xh, Yh),
-    (clause(closed(Xh,Yh,_,_,_),true) ->
+    (closed(Xh,Yh,_,_,_)) ->
         assert(at_home(1)),
         retractall(immunity(_)),
-        assert(immunity(0))).
+        assert(immunity(0)).
 
 %predicate to find path in from start to home with use of A* algorithm
 a_search() :-

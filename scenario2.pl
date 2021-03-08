@@ -188,7 +188,7 @@ backtracking() :-
         covid_is_near(),
         backtracking_path(Road,Xh,Yh),
         min_distance(D),
-        write('Road: '), print(Road), write('\nDistance: '), print(D).
+        write('Road: '), print(Road), write('\nDistance: '), print(D),!.
 
 %predicate to choose shortest path among all paths to home
 backtracking_path(Sorted,Xh,Yh) :-

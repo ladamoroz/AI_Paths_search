@@ -15,9 +15,9 @@ start(0,0).             %started cell of actor
 xmax(9).                %maximum number of cells horizontally
 ymax(9).                %maximum number of cells vertically
 
-/*covid(4,8).
-covid(2,6).
-doctor(4,1).
+/*covid(4,8).           Uncomment and insert your path
+covid(2,6).             and comment generate_map() in search 
+doctor(4,1).            to test
 mask(8,6).
 home(1,2).*/
 

@@ -3,18 +3,23 @@
 
 
 :- dynamic parent/2.            %dynamic predicate parent with 2 parameters to find parent of cell in A* algorithm
-:- dynamic opened/5.            %dynamic predicate opened with 5 parameters to manipulate cells which need to visit in A* algorithm
-:- dynamic closed/5.            %dynamic predicate closed with 5 parametes to manipulate with visited cells in A* algorithm
+:- dynamic opened/6.            %dynamic predicate opened with 5 parameters to manipulate cells which need to visit in A* algorithm
+:- dynamic closed/6.            %dynamic predicate closed with 5 parametes to manipulate with visited cells in A* algorithm
 :- dynamic at_home/1.           %dynamic predicate at_home with 1 parameter to determine whether actor at home in A* algorithm
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
    Generating the map
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-start(0,0).             %started cell of actor 
-xmax(9).                %maximum number of cells horizontally 
+start(0,0).             %started cell of actor
+xmax(9).                %maximum number of cells horizontally
 ymax(9).                %maximum number of cells vertically
 
+/*covid(4,8).
+covid(2,6).
+doctor(4,1).
+mask(8,6).
+home(1,2).*/
 
 %predicate to check whether cell in the borders of the map
 in_field(X,Y):- xmax(Xmax), ymax(Ymax), Xbound is Xmax-1, Ybound is Ymax-1, between(0, Xbound, X), between(0,Ybound,Y).
@@ -44,7 +49,7 @@ covid_zone(X,Y):-
         ).
 
 
-%predicate to randomly choose covid cell 
+%predicate to randomly choose covid cell
 generate_covid():-
         xmax(Xmax),
         ymax(Ymax),
@@ -121,26 +126,20 @@ equals(X,Y,X0,Y0) :-
     Y is Y0.
     
 
-%predicate to check whether actor have immunity 
-check_immunity(X0, Y0) :-
-        ((doctor(X0,Y0);
-        mask(X0, Y0);
-        immunity(1)),
-        retractall(immunity(_)),
-        assert(immunity(1)));
-        retractall(immunity(_)),
-        assert(immunity(0)).
-
+%predicate to check whether actor have immunity
+/*check_immunity(X0, Y0, Path) :-
+        (doctor(X0, Y0); mask(X0,Y0)) -> (retractall(immunity(_)), assert(immunity(1)));
+        (retractall(immunity(_)), assert(immunity(0))).
+*/
 
 %predicate to generate possible move of actor
-move(X0,Y0,X,Y):-
+move(X0,Y0,X,Y,Im):-
     neighbours(X0,Y0,X,Y),
     (
-        \+(covid_zone(X,Y));
-        (
-        covid_zone(X,Y),
-        immunity(1))
-     ).
+     (covid_zone(X,Y),Im ==1);
+    \+(covid_zone(X,Y))
+    
+    ).
 
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -148,24 +147,22 @@ move(X0,Y0,X,Y):-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 %base case of backtracking when actor reach home
-backtracking_search([X0, Y0], [X0, Y0], _,[[X0,Y0]], Distance):-
+backtracking_search([X0, Y0], [X0, Y0], _,[[X0,Y0]], Distance,_):-
         home(X0,Y0),
         min_distance(Mindist),
         Mindist > Distance,
         retractall(min_distance(_)),
-        assert(min_distance(Distance)),
-        retractall(immunity(_)),
-        assert(immunity(0)).
+        assert(min_distance(Distance)).
 
 %backtracking predicate to find possible paths to home cell
-backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance) :-
-        move(X0,Y0,X,Y),
-        check_immunity(X0,Y0),
+backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance,Im) :-
+        ((doctor(X0,Y0); mask(X0,Y0); Im == 1)-> I is 1; I is 0),
+        move(X0,Y0,X,Y,I),
         \+(member([X,Y], Visited)),
         min_distance(Mindist),
         Dist is Distance +1,
         Dist < Mindist,
-        backtracking_search([X, Y], [Xh,Yh], [[X, Y]|Visited], Path, Dist).
+        backtracking_search([X, Y], [Xh,Yh], [[X, Y]|Visited], Path, Dist,I).
 
 
 %predicate for backtracking search of shortest path to home on generated map
@@ -176,8 +173,6 @@ backtracking() :-
         ymax(Ymax),
         retractall(min_distance(_)),
         assert(min_distance(Xmax*Ymax)),
-        retractall(immunity(_)),
-        assert(immunity(0)),
         backtracking_path(Road,Xh,Yh),
         min_distance(D),
         write('Road: '), print(Road), write('\nDistance: '), print(D).
@@ -185,7 +180,7 @@ backtracking() :-
 %predicate to choose shortest path among all paths to home
 backtracking_path(Sorted,Xh,Yh) :-
         start(X0,Y0),
-        setof(Len-Path, (backtracking_search([X0,Y0],[Xh,Yh], [], Path, 0), length(Path, Len)), All),
+        setof(Len-Path, (backtracking_search([X0,Y0],[Xh,Yh], [], Path, 0,0), length(Path, Len)), All),
         member(_-Sorted, All),!.
 
 
@@ -196,10 +191,10 @@ backtracking_path(Sorted,Xh,Yh) :-
 
 %predicate to find cost of movement to (X,Y) cell
 g(X,Y,G) :-
-    (parent([Xp,Yp],[X,Y]), opened(Xp, Yp, _, _, _)) ->
-        opened(Xp, Yp, Gp, _, _), G is Gp+1;
-    (parent([Xp,Yp],[X,Y]), closed(Xp, Yp, _, _, _)) ->
-        closed(Xp,Yp,Gp,_,_), G is Gp+1;
+    (parent([Xp,Yp],[X,Y]), opened(Xp, Yp, _, _, _,_)) ->
+        opened(Xp, Yp, Gp, _, _,_), G is Gp+1;
+    (parent([Xp,Yp],[X,Y]), closed(Xp, Yp, _, _, _,_)) ->
+        closed(Xp,Yp,Gp,_,_,_), G is Gp+1;
     (start(Xs,Ys),
     G is max(abs(X -Xs),abs(Y-Ys))).
 
@@ -217,13 +212,12 @@ a_star() :-
     g(Xs, Ys, Gs),
     h(Xs, Ys, Hs),
     Fs is Gs + Hs,
-    retractall(opened(_, _, _, _, _)),
-    retractall(closed(_, _, _, _, _)),
+    retractall(opened(_, _, _, _, _,_)),
+    retractall(closed(_, _, _, _, _,_)),
     retractall(parent(_, _)),
     assert(at_home(0)),
-    assert(opened(Xs, Ys, Gs, Hs, Fs)),
-    retractall(immunity(_)),
-    assert(immunity(0)),
+    (doctor(Xs,Ys); mask(Xs,Ys) -> I is 1; I is 0),
+    assert(opened(Xs, Ys, Gs, Hs, Fs,I)),
     a_search(),
     at_home(Home),
     Home == 1 -> a_star_shorted(Road,Xh,Yh),
@@ -248,68 +242,65 @@ path([Xs, Ys], [Xh, Yh], [[Xs,Ys]|Path]):-
 
 %terminating condition for A* algorithm when no path found
 a_search() :-
-    \+(opened(_,_,_,_,_)),
+    \+(opened(_,_,_,_,_,_)),
     write('No path').
 
 %terminating condition for A* algorithm when path found
 a_search() :-
     home(Xh, Yh),
-    (closed(Xh,Yh,_,_,_)) ->
-        assert(at_home(1)),
-        retractall(immunity(_)),
-        assert(immunity(0)).
+    (closed(Xh,Yh,_,_,_,_)) ->
+        assert(at_home(1)).
 
 %predicate to find path in from start to home with use of A* algorithm
 a_search() :-
-    (home(Xh,Yh), \+(closed(Xh,Yh,_,_,_)), opened(_,_,_,_,_) )->
+    (home(Xh,Yh), \+(closed(Xh,Yh,_,_,_,_)), opened(_,_,_,_,_,_) )->
     child([Xc,Yc]),
-    opened(Xc,Yc,Gc,Hc,Fc),
-    assert(closed(Xc,Yc,Gc,Hc,Fc)),
-    retractall(opened(Xc,Yc,_,_,_)),
-    a_neighbours(Xc,Yc,Gc,Hc,Fc),
+    opened(Xc,Yc,Gc,Hc,Fc,I),
+    assert(closed(Xc,Yc,Gc,Hc,Fc,I)),
+    retractall(opened(Xc,Yc,_,_,_,_)),
+    a_neighbours(Xc,Yc,Gc,Hc,Fc,I),
     a_search().
 
 %predicate to calculate cost of movement from cell to its neighbour cell
-a_neighbours(X,Y,G,H,F) :-
-    ((check_immunity(X,Y), move(X,Y,Xn,Yn), available(Xn,Yn), \+(opened(Xn,Yn,_,_,_)))->
+a_neighbours(X,Y,G,H,F,Im) :-
+    ((((doctor(X,Y); mask(X,Y); Im == 1)-> I is 1; I is 0), move(X,Y,Xn,Yn,I), available(Xn,Yn), \+(opened(Xn,Yn,_,_,_,_)))->
      assert(parent([X, Y], [Xn, Yn])),
      g(Xn, Yn, Gn),
      h(Xn, Yn, Hn),
      Fn is Gn + Hn,
-     assert(opened(Xn, Yn, Gn, Hn, Fn)),
-     a_neighbours(X,Y,G,H,F)
+     assert(opened(Xn, Yn, Gn, Hn, Fn, I)),
+     a_neighbours(X,Y,G,H,F,I)
     );
     
-    ((check_immunity(X,Y), move(X, Y, Xn, Yn), available(Xn, Yn), opened(Xn, Yn, Gn, Hn,_),G1 is G+1, G1 < Gn) ->
+    ((((doctor(X,Y); mask(X,Y); Im == 1)-> I is 1; I is 0), move(X, Y, Xn, Yn, I), available(Xn, Yn), opened(Xn, Yn, Gn, Hn,_,_),G1 is G+1, G1 < Gn) ->
      F1 is G1+Hn,
-     assert(opened(Xn, Yn, G1, Hn, F1)),
-     retract(opened(Xn, Yn, Gn, _, _)),
+     assert(opened(Xn, Yn, G1, Hn, F1,I)),
+     retract(opened(Xn, Yn, Gn, _, _,_)),
      retract(parent([_, _], [Xn, Yn])),
      assert(parent([X, Y], [Xn, Yn])),
-     a_neighbours(X, Y, G, H, F)
+     a_neighbours(X, Y, G, H, F, I)
     );
     
     true.
 
 %predicate to check whether we can move to given point
 available(X,Y) :-
-    \+(covid_zone(X, Y)),
-    \+(closed(X,Y,_,_,_)).
+    \+(closed(X,Y,_,_,_,_)).
 
-%predicate to choose cell with minimum F among children 
+%predicate to choose cell with minimum F among children
 child([X,Y]) :-
-    findall(opened(X0,Y0,_,_,F0), opened(X0,Y0,_,_,F0), [A|Tail]),
+    findall(opened(X0,Y0,_,_,F0,_), opened(X0,Y0,_,_,F0,_), [A|Tail]),
     child(A, Tail, [X,Y]).
 
 %terminating condition for finding child with min F
-child(opened(X0,Y0,_,_,_),[],[X,Y]) :-
+child(opened(X0,Y0,_,_,_,_),[],[X,Y]) :-
     X is X0,
     Y is Y0.
 
 %comparing F among children
-child(opened(X0,Y0,_,_,F0), [opened(X1,Y1,_,_,F1)|Tail], [X,Y]) :-
-    (F0 < F1) -> (child(opened(X0,Y0,_,_,F0),Tail, [X,Y]));
-    child(opened(X1,Y1,_,_,F1),Tail, [X,Y]).
+child(opened(X0,Y0,_,_,F0,_), [opened(X1,Y1,_,_,F1,_)|Tail], [X,Y]) :-
+    (F0 < F1) -> (child(opened(X0,Y0,_,_,F0,_),Tail, [X,Y]));
+    child(opened(X1,Y1,_,_,F1,_),Tail, [X,Y]).
     
     
     

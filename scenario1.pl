@@ -15,7 +15,7 @@ start(0,0).             %started cell of actor
 xmax(9).                %maximum number of cells horizontally
 ymax(9).                %maximum number of cells vertically
 
-/*Uncomment and insert your path and comment generate_map() in search to test*/
+/*Comment and uncomment generate_map() in a_star() or bactracking() to test on random map*/
 
 covid(8,0).
 covid(8,1).

@@ -69,7 +69,8 @@ generate_covid():-
 generate_covids():-
         retractall(covid(_,_)),
         repeat, generate_covid() ->!,
-        repeat, generate_covid() ->!.
+        repeat, generate_covid() ->!,
+        print_map().
 
 
 %predicate to randomly choose doctor cell
@@ -311,7 +312,6 @@ child(opened(X0,Y0,_,_,F0,_), [opened(X1,Y1,_,_,F1,_)|Tail], [X,Y]) :-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 main() :-
-    print_map(),
     statistics(runtime, [Start|_]),
     %Uncomment necessary algorithm
     backtracking(),

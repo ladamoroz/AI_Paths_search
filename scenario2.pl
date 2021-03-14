@@ -15,11 +15,13 @@ start(0,0).             %started cell of actor
 xmax(9).                %maximum number of cells horizontally
 ymax(9).                %maximum number of cells vertically
 
-/*covid(4,8).
-covid(2,6).
-doctor(4,1).
-mask(8,6).
-home(1,2).*/
+/*Comment and uncomment generate_map() in a_star() or bactracking() to test on random map*/
+
+covid(8,0).
+covid(8,1).
+doctor(0,2).
+mask(7,5).
+home(6,6).
 
 %predicate to check whether cell in the borders of the map
 in_field(X,Y):- xmax(Xmax), ymax(Ymax), Xbound is Xmax-1, Ybound is Ymax-1, between(0, Xbound, X), between(0,Ybound,Y).
@@ -175,7 +177,7 @@ backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance,Im) :
 
 %predicate for backtracking search of shortest path to home on generated map
 backtracking() :-
-        generate_map(),
+        %generate_map(),
         home(Xh,Yh),
         xmax(Xmax),
         ymax(Ymax),
@@ -214,7 +216,7 @@ h(X,Y,H) :-
 
 %predicate to find shortest path with use of A* algorithm on the generated map
 a_star() :-
-    generate_map(),
+    %generate_map(),
     start(Xs,Ys),
     home(Xh, Yh),
     g(Xs, Ys, Gs),
@@ -319,8 +321,8 @@ child(opened(X0,Y0,_,_,F0,_), [opened(X1,Y1,_,_,F1,_)|Tail], [X,Y]) :-
 main() :-
     statistics(runtime, [Start|_]),
     %Uncomment necessary algorithm
-    %backtracking(),
-    a_star(),
+    backtracking(),
+    %a_star(),
     statistics(runtime,[Stop|_]),
     ExecTime is Stop-Start,
     write('\nExecution time: '),write(ExecTime),write('ms').

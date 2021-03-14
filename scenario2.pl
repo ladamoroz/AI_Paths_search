@@ -109,8 +109,7 @@ generate_map():-
     generate_covids(),
     repeat, generate_doctor()->!,
     repeat, generate_mask()->!,
-    repeat, generate_home()->!,
-    print_map().
+    repeat, generate_home()->!.
 
 
 %predicate to print places of covids, doctor, mask and home
@@ -319,6 +318,7 @@ child(opened(X0,Y0,_,_,F0,_), [opened(X1,Y1,_,_,F1,_)|Tail], [X,Y]) :-
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
 main() :-
+    print_map(),
     statistics(runtime, [Start|_]),
     %Uncomment necessary algorithm
     backtracking(),

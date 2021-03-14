@@ -15,13 +15,14 @@ start(0,0).             %started cell of actor
 xmax(9).                %maximum number of cells horizontally
 ymax(9).                %maximum number of cells vertically
 
-/*Comment 5 rows below and uncomment generate_map() in a_star() or bactracking() to test on random map*/
+/*Comment 6 rows below and uncomment generate_map() in a_star() or bactracking() to test on random map*/
 
 covid(8,0).
 covid(8,1).
 doctor(0,2).
 mask(7,5).
 home(6,6).
+print_map().
 
 %predicate to check whether cell in the borders of the map
 in_field(X,Y):- xmax(Xmax), ymax(Ymax), Xbound is Xmax-1, Ybound is Ymax-1, between(0, Xbound, X), between(0,Ybound,Y).

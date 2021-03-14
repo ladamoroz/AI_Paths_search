@@ -12,7 +12,7 @@ report.pdf contains impossible maps, description of used algorithms, and statist
 ## Code testing
 To choose algorithm which you want to test, comment backtracking() or a_star() in main predicate.
 
-If you want to test some given map then comment generate_map() in backtracking or a_star() and insert the map in form:\
+If you want to test some given map then comment generate_map() in backtracking() or a_star() and insert the map in form:\
 covid(4,8).\
 covid(2,6).\
 doctor(4,1).\

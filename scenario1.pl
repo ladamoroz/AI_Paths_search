@@ -17,11 +17,11 @@ ymax(9).                %maximum number of cells vertically
 
 /*Uncomment and insert your path and comment generate_map() in search to test*/
 
-covid(4,8).           
-covid(2,6).             
-doctor(4,1).            
-mask(8,6).
-home(1,2).
+covid(8,0).
+covid(8,1).
+doctor(0,2).
+mask(7,5).
+home(6,6).
 
 %predicate to check whether cell in the borders of the map
 in_field(X,Y):- xmax(Xmax), ymax(Ymax), Xbound is Xmax-1, Ybound is Ymax-1, between(0, Xbound, X), between(0,Ybound,Y).

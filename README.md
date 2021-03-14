@@ -1,6 +1,6 @@
 # Introduction to AI. Assignment 1.
 
-##Description of content
+## Description of content
 There are 3 files: scenario1.pl, scenario2.pl and report.pdf. 
 
 scenario1.pl contains A* and backtracking algorithms for situation when agent can percieve covid standing next to infected cells. 

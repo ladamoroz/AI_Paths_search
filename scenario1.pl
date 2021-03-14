@@ -15,11 +15,13 @@ start(0,0).             %started cell of actor
 xmax(9).                %maximum number of cells horizontally
 ymax(9).                %maximum number of cells vertically
 
-/*covid(4,8).           Uncomment and insert your path
-covid(2,6).             and comment generate_map() in search 
-doctor(4,1).            to test
+/*Uncomment and insert your path and comment generate_map() in search to test*/
+
+covid(4,8).           
+covid(2,6).             
+doctor(4,1).            
 mask(8,6).
-home(1,2).*/
+home(1,2).
 
 %predicate to check whether cell in the borders of the map
 in_field(X,Y):- xmax(Xmax), ymax(Ymax), Xbound is Xmax-1, Ybound is Ymax-1, between(0, Xbound, X), between(0,Ybound,Y).
@@ -167,7 +169,7 @@ backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance,Im) :
 
 %predicate for backtracking search of shortest path to home on generated map
 backtracking() :-
-        generate_map(),
+        %generate_map(),
         home(Xh,Yh),
         xmax(Xmax),
         ymax(Ymax),
@@ -206,7 +208,7 @@ h(X,Y,H) :-
 
 %predicate to find shortest path with use of A* algorithm on the generated map
 a_star() :-
-    generate_map(),
+    %generate_map(),
     start(Xs,Ys),
     home(Xh, Yh),
     g(Xs, Ys, Gs),

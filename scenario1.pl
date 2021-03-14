@@ -313,8 +313,8 @@ child(opened(X0,Y0,_,_,F0,_), [opened(X1,Y1,_,_,F1,_)|Tail], [X,Y]) :-
 main() :-
     statistics(runtime, [Start|_]),
     %Uncomment necessary algorithm
-    %backtracking(),
-    a_star(),
+    backtracking(),
+    %a_star(),
     statistics(runtime,[Stop|_]),
     ExecTime is Stop-Start,
     write('\nExecution time: '),write(ExecTime),write('ms').

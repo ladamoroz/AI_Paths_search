@@ -10,6 +10,8 @@ scenario2.pl contains A* and backtracking algorithms for situation when agent ca
 report.pdf contains impossible maps, description of used algorithms, and statistical comparison of algorithms in different scenarios.
 
 ## Code testing
+To run code call main().
+
 To choose algorithm which you want to test, comment backtracking() or a_star() in main predicate.
 
 If you want to test some given map then comment generate_map() in backtracking() or a_star() and insert the map in form:\

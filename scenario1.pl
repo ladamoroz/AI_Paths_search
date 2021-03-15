@@ -129,11 +129,6 @@ equals(X,Y,X0,Y0) :-
     Y is Y0.
     
 
-%predicate to check whether actor have immunity
-/*check_immunity(X0, Y0, Path) :-
-        (doctor(X0, Y0); mask(X0,Y0)) -> (retractall(immunity(_)), assert(immunity(1)));
-        (retractall(immunity(_)), assert(immunity(0))).
-*/
 
 %predicate to generate possible move of actor
 move(X0,Y0,X,Y,Im):-

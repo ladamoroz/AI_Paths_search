@@ -69,8 +69,7 @@ generate_covid():-
 generate_covids():-
         retractall(covid(_,_)),
         repeat, generate_covid() ->!,
-        repeat, generate_covid() ->!,
-        print_map().
+        repeat, generate_covid() ->!.
 
 
 %predicate to randomly choose doctor cell
@@ -111,7 +110,8 @@ generate_map():-
     generate_covids(),
     repeat, generate_doctor()->!,
     repeat, generate_mask()->!,
-    repeat, generate_home()->!.
+    repeat, generate_home()->!,
+    print_map().
 
 
 %predicate to print places of covids, doctor, mask and home
@@ -170,6 +170,7 @@ backtracking_search([X0, Y0], [Xh, Yh], Visited, [[X0, Y0]|Path], Distance,Im) :
 
 %predicate for backtracking search of shortest path to home on generated map
 backtracking() :-
+        %uncomment generate_map() if you want to randomly generate map
         %generate_map(),
         home(Xh,Yh),
         xmax(Xmax),
@@ -209,6 +210,7 @@ h(X,Y,H) :-
 
 %predicate to find shortest path with use of A* algorithm on the generated map
 a_star() :-
+    %uncomment generate_map() if you want to randomly generate map
     %generate_map(),
     start(Xs,Ys),
     home(Xh, Yh),
@@ -313,9 +315,11 @@ child(opened(X0,Y0,_,_,F0,_), [opened(X1,Y1,_,_,F1,_)|Tail], [X,Y]) :-
 
 main() :-
     statistics(runtime, [Start|_]),
+
     %Uncomment necessary algorithm
-    backtracking(),
-    %a_star(),
+    %backtracking(),
+    a_star(),
+
     statistics(runtime,[Stop|_]),
     ExecTime is Stop-Start,
     write('\nExecution time: '),write(ExecTime),write('ms').

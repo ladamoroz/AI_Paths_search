@@ -7,7 +7,7 @@ scenario1.pl contains A* and backtracking algorithms for situation when agent ca
 
 scenario2.pl contains A* and backtracking algorithms for situation when agent can percieve covid standing 1 cell away from infected cells. 
 
-report.pdf contains impossible maps, description of used algorithms, and statistical comparison of algorithms in different scenarios.
+report.pdf contains impossible maps, description of used algorithms,PEAS characterization and statistical comparison of algorithms in different scenarios.
 
 ## Code testing
 To run code call main().
